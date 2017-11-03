@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MintyPeterson.Snippets.Helpers
+namespace MintyPeterson.Helpers
 {
   /// <summary>
   /// Provides properties and methods that aid the creation of paginated collections.

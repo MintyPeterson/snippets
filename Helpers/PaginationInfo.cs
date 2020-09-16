@@ -1,28 +1,111 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+// <copyright file="PaginationInfo.cs" company="Tom Cook">
+//   Copyright (c) Tom Cook. All rights reserved.
+// </copyright>
 
 namespace MintyPeterson.Helpers
 {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+
   /// <summary>
   /// Provides properties and methods that aid the creation of paginated collections.
   /// </summary>
   public class PaginationInfo
   {
     /// <summary>
-    /// Gets or sets the page number.
+    /// Initializes a new instance of the <see cref="PaginationInfo"/> class.
     /// </summary>
-    public int PageNumber { get; private set; }
+    public PaginationInfo()
+      : this(0, 1)
+    {
+    }
 
     /// <summary>
-    /// Gets or sets the number of items per page.
+    /// Initializes a new instance of the <see cref="PaginationInfo"/> class.
     /// </summary>
-    public int ItemsPerPage { get; private set; }
+    /// <param name="numberOfItems">The number of items.</param>
+    public PaginationInfo(int numberOfItems)
+      : this(numberOfItems, 1)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaginationInfo"/> class.
+    /// </summary>
+    /// <param name="pageNumber">The page number.</param>
+    /// <param name="numberOfItems">The number of items.</param>
+    public PaginationInfo(int numberOfItems, int pageNumber)
+      : this(numberOfItems, pageNumber, 20)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaginationInfo"/> class.
+    /// </summary>
+    /// <param name="itemsPerPage">The number of items per page.</param>
+    /// <param name="pageNumber">The page number.</param>
+    /// <param name="numberOfItems">The number of items.</param>
+    public PaginationInfo(int numberOfItems, int pageNumber, int itemsPerPage)
+    {
+      this.NumberOfItems = numberOfItems;
+
+      if (itemsPerPage > 0)
+      {
+        this.ItemsPerPage = itemsPerPage;
+      }
+      else
+      {
+        this.ItemsPerPage = 20;
+      }
+
+      if (pageNumber > 0 && pageNumber <= this.NumberOfPages)
+      {
+        this.PageNumber = pageNumber;
+      }
+      else
+      {
+        this.PageNumber = 1;
+      }
+    }
+
+    /// <summary>
+    /// Gets or sets the page number.
+    /// </summary>
+    public int PageNumber { get; set; }
 
     /// <summary>
     /// Gets or sets the number of items.
     /// </summary>
-    public int NumberOfItems { get; private set; }
+    public int NumberOfItems { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of items per page.
+    /// </summary>
+    public int ItemsPerPage { get; set; }
+
+    /// <summary>
+    /// Gets the first item number on ths page.
+    /// </summary>
+    public int FirstItemNumber
+    {
+      get
+      {
+        return 1 + ((this.PageNumber - 1) * this.ItemsPerPage);
+      }
+    }
+
+    /// <summary>
+    /// Gets the last item number on the page.
+    /// </summary>
+    public int LastItemNumber
+    {
+      get
+      {
+        return Math.Min(
+          this.FirstItemNumber + this.ItemsPerPage - 1, this.NumberOfItems);
+      }
+    }
 
     /// <summary>
     /// Gets the total number of pages.
@@ -36,18 +119,19 @@ namespace MintyPeterson.Helpers
           return 1;
         }
 
-        return (int)Math.Ceiling((float)this.NumberOfItems / this.ItemsPerPage);
+        return (int)Math.Ceiling(
+          (float)this.NumberOfItems / this.ItemsPerPage);
       }
     }
 
     /// <summary>
-    /// Gets the number of items to skip.
+    /// Gets a value indicating whether there is a previous page number or not.
     /// </summary>
-    public int NumberOfItemsToSkip
+    public bool HasPreviousPageNumber
     {
       get
       {
-        return (this.PageNumber - 1) * this.ItemsPerPage;
+        return !(this.PreviousPageNumber == this.PageNumber);
       }
     }
 
@@ -64,6 +148,17 @@ namespace MintyPeterson.Helpers
         }
 
         return this.PageNumber - 1;
+      }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether there is a next page number or not.
+    /// </summary>
+    public bool HasNextPageNumber
+    {
+      get
+      {
+        return !(this.NextPageNumber == this.PageNumber);
       }
     }
 
@@ -88,18 +183,14 @@ namespace MintyPeterson.Helpers
     /// <summary>
     /// Gets an enumerable list of page numbers in short format.
     /// </summary>
-    public IEnumerable<int> ShortPageList
+    public IEnumerable<int> PageNumberList
     {
       get
       {
         var pages =
           Enumerable
-            .Range(
-              this.PageNumber - 5, 10
-            )
-            .Where(
-              n => n >= 1 && n <= this.NumberOfPages
-            );
+            .Range(this.PageNumber - 5, 10)
+            .Where(n => n >= 1 && n <= this.NumberOfPages);
 
         var distance = this.NumberOfPages - this.PageNumber;
 
@@ -109,10 +200,7 @@ namespace MintyPeterson.Helpers
         }
         else
         {
-          pages =
-            pages.Where(
-              p => p >= this.PageNumber - (4 - distance)
-            );
+          pages = pages.Where(p => p >= this.PageNumber - (4 - distance));
         }
 
         return pages.Take(5);
@@ -120,40 +208,12 @@ namespace MintyPeterson.Helpers
     }
 
     /// <summary>
-    /// Initialises a new instance of the <see cref="PaginationInfo"/> class.
+    /// Gets the number of items to skip.
     /// </summary>
-    public PaginationInfo(int numberOfItems)
-      : this(numberOfItems, 1)
+    /// <returns>The number of items to skip.</returns>
+    public int GetNumberOfItemsToSkip()
     {
-    }
-
-    /// <summary>
-    /// Initialises a new instance of the <see cref="PaginationInfo"/> class.
-    /// </summary>
-    public PaginationInfo(int numberOfItems, int pageNumber)
-      : this(numberOfItems, pageNumber, 20)
-    {
-    }
-
-    /// <summary>
-    /// Initialises a new instance of the <see cref="PaginationInfo"/> class.
-    /// </summary>
-    /// <param name="itemsPerPage">The number of items per page.</param>
-    /// <param name="numberOfItems">The number of items.</param>
-    /// <param name="page">The page number.</param>
-    public PaginationInfo(int numberOfItems, int pageNumber, int itemsPerPage)
-    {
-      this.NumberOfItems = numberOfItems;
-      this.ItemsPerPage = itemsPerPage;
-
-      if (pageNumber > 0 && pageNumber <= this.NumberOfPages)
-      {
-        this.PageNumber = pageNumber;
-      }
-      else
-      {
-        this.PageNumber = 1;
-      }
+      return (this.PageNumber - 1) * this.ItemsPerPage;
     }
   }
 }
